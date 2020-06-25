@@ -321,29 +321,32 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
         """
         exclude_admins = str2bool(request.query_params.get('exclude_admins'))
         organization = self.get_object()
-        organization_course_ids = []
-        roles_to_exclude = []
-        if exclude_admins:
-            organization_course_ids = CourseEnrollment.objects\
-                .filter(user__organizations=organization, is_active=True)\
-                .order_by('course_id').distinct().values_list('course_id', flat=True)
-            organization_course_ids = map(get_course_key, filter(None, organization_course_ids))
-            roles_to_exclude = [CourseInstructorRole.ROLE, CourseStaffRole.ROLE, CourseObserverRole.ROLE, CourseAssistantRole.ROLE]
 
-        enrollment_qs = CourseEnrollment.objects\
-            .filter(user__organizations=organization, is_active=True)\
-            .exclude(
-                user_id__in=CourseAccessRole.objects.filter(
-                    course_id__in=organization_course_ids, role__in=roles_to_exclude
-                ).values_list('user_id', flat=True)
-            ).values_list('course_id', 'user_id')
+        course_access_roles = {}
+        if exclude_admins:
+            roles_to_exclude = [CourseInstructorRole.ROLE, CourseStaffRole.ROLE, CourseObserverRole.ROLE,
+                                CourseAssistantRole.ROLE]
+
+            for course_access in CourseAccessRole.objects.filter(role__in=roles_to_exclude,
+                                                                 user__organizations=organization):
+                if not course_access_roles.get(course_access.user_id):
+                    course_access_roles[course_access.user_id] = [course_access.course_id]
+
+                course_access_roles[course_access.user_id] += [course_access.course_id]
+
+        enrollment_qs = CourseEnrollment.objects.filter(
+            user__organizations=organization, is_active=True
+        ).values_list('course_id', 'user_id')
 
         enrollments = {}
         course_ids = []
         for (course_id, user_id) in enrollment_qs:
-            enrollments.setdefault(course_id, []).append(user_id)
-            if course_id not in course_ids:
-                course_ids.append(course_id)
+            if course_id in course_access_roles.get(user_id, []):
+                continue
+
+            enrollments.setdefault(course_id.to_deprecated_string(), []).append(user_id)
+            if course_id.to_deprecated_string() not in course_ids:
+                course_ids.append(course_id.to_deprecated_string())
 
         course_keys = map(get_course_key, filter(None, course_ids))
         if request.query_params.get('mobile_available'):
