@@ -91,6 +91,9 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
             else:
                 q_object = True
 
+            # filter only users courses that are enrolled i.e is_active=True.
+            q_object.add(Q(users__courseenrollment__is_active=True), Q.AND)
+
             # annotating queryset to get number of courses
             queryset = queryset.annotate(
                 number_of_courses=Count(
