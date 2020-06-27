@@ -466,8 +466,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         for i, user in enumerate(users):
             user.organizations.add(organization['id'])
             CourseEnrollmentFactory.create(user=users[i], course_id=course.id)
-
-        CourseAccessRoleFactory.create(user=users[1], course_id=course.id, role=CourseObserverRole.ROLE)
+            CourseAccessRoleFactory.create(user=users[i], course_id=course.id, role=CourseObserverRole.ROLE)
 
         test_uri = '{}{}/'.format(self.base_organizations_uri, organization['id'])
         courses_uri = '{}courses/?exclude_admins=True'.format(test_uri)
