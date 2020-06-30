@@ -69,12 +69,6 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
             queryset = queryset.filter(display_name=display_name)
 
         if exclude_type:
-            q_object = Q()
-
-            # Filtering roles to exclude
-            roles_to_exclude = [CourseInstructorRole.ROLE, CourseStaffRole.ROLE, CourseObserverRole.ROLE, CourseAssistantRole.ROLE]
-            user_ids = CourseAccessRole.objects.filter(role__in=roles_to_exclude).distinct().values_list('user_id', flat=True)
-            q_object.add(~Q(users__courseenrollment__user_id__in=user_ids), Q.AND)
 
             # Filtering company admin users to exclude
             admin_users = User.objects.filter(id__in=list(queryset.filter(
@@ -93,7 +87,9 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
                 org_id, users in admin_users_dict.items()]
             if exclude_admin_users:
                 exclude_admin_users = reduce(lambda a, b: a | b, exclude_admin_users)
-                q_object.add(~Q(exclude_admin_users), Q.AND)
+                q_object = ~Q(exclude_admin_users)
+            else:
+                q_object = True
 
             # annotating queryset to get number of courses
             queryset = queryset.annotate(
