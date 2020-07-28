@@ -41,6 +41,17 @@ class OrganizationWithCourseCountSerializer(BasicOrganizationSerializer):
                   'contact_phone', 'logo_url', 'created', 'modified', 'number_of_participants')
 
 
+class OrganizationWithParticipantCountSerializer(BasicOrganizationSerializer):
+    """ Serializer for Organization fields with number of courses """
+    number_of_participants = serializers.IntegerField()
+
+    class Meta(object):
+        """ Serializer/field specification """
+        model = Organization
+        fields = ('url', 'id', 'name', 'display_name', 'contact_name', 'contact_email',
+                  'contact_phone', 'logo_url', 'created', 'modified', 'number_of_participants')
+
+
 class OrganizationAttributesSerializer(serializers.ModelSerializer):
     """ Serializer for Organization Attributes interactions """
 

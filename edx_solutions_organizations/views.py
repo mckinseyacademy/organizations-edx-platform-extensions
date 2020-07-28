@@ -6,7 +6,7 @@ from functools import reduce
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Sum, F, Count, Prefetch, Case, When, Q, Value, IntegerField
+from django.db.models import Sum, F, Count, Prefetch, Case, When, Q
 from django.db import IntegrityError
 from django.utils.translation import ugettext as _
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
@@ -43,7 +43,12 @@ from edx_solutions_organizations.models import OrganizationUsersAttributes
 from edx_solutions_organizations.serializers import OrganizationAttributesSerializer
 from edx_solutions_organizations.utils import generate_key_for_field, is_key_exists, is_label_exists, \
     generate_random_key_for_field
-from .serializers import OrganizationSerializer, BasicOrganizationSerializer, OrganizationWithCourseCountSerializer
+from .serializers import (
+    OrganizationSerializer,
+    BasicOrganizationSerializer,
+    OrganizationWithCourseCountSerializer,
+    OrganizationWithParticipantCountSerializer,
+)
 from .models import Organization, OrganizationGroupUser
 
 
@@ -59,6 +64,7 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
         queryset = self.get_queryset()
 
         exclude_type = request.query_params.get('type', None)
+        include_course_counts = request.query_params.get('include_course_counts', True)
         ids = request.query_params.get('ids', None)
         if ids:
             ids = [int(id) for id in ids.split(',')]
@@ -68,8 +74,7 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
         if display_name is not None:
             queryset = queryset.filter(display_name=display_name)
 
-        include_course_counts = False
-        if include_course_counts:
+        if str2bool(include_course_counts):
             if exclude_type:
                 q_object = Q()
 
@@ -113,9 +118,7 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
                     number_of_courses=Count('users__courseenrollment__course_id', distinct=True)
                 )
         else:
-            queryset = queryset.annotate(
-                number_of_courses=Value(0, output_field=IntegerField()),
-            )
+            self.serializer_class = OrganizationWithParticipantCountSerializer
 
         self.queryset = queryset.annotate(
             number_of_participants=Count('users', distinct=True)
