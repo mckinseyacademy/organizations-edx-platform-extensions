@@ -64,7 +64,7 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
         queryset = self.get_queryset()
 
         exclude_type = request.query_params.get('type', None)
-        include_course_counts = request.query_params.get('include_course_counts', True)
+        include_course_counts = request.query_params.get('include_course_counts', 'true')
         ids = request.query_params.get('ids', None)
         if ids:
             ids = [int(id) for id in ids.split(',')]

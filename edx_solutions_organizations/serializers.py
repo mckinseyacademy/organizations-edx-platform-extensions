@@ -42,7 +42,7 @@ class OrganizationWithCourseCountSerializer(BasicOrganizationSerializer):
 
 
 class OrganizationWithParticipantCountSerializer(BasicOrganizationSerializer):
-    """ Serializer for Organization fields with number of courses """
+    """ Serializer for Organization fields with number of participants """
     number_of_participants = serializers.IntegerField()
 
     class Meta(object):
