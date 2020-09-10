@@ -27,6 +27,9 @@ class Organization(TimeStampedModel):
     # could be different for each organization
     attributes = models.TextField(default='{}')
     include_manager_info = models.BooleanField(default=False)
+    salesforce_id = models.TextField(null=True, blank=True)
+    # JSON to hold any additional metadata related to an organization
+    additional_metadata = models.TextField(default='{}')
 
     def is_attribute_exists(self, name):
         """
