@@ -12,7 +12,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
         """ Serializer/field specification """
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'contact_name', 'contact_email', 'contact_phone',
-                  'logo_url', 'users', 'groups', 'created', 'modified')
+                  'logo_url', 'users', 'groups', 'created', 'modified', 'salesforce_id', 'additional_metadata',)
         read_only = ('url', 'id', 'created')
         extra_kwargs = {'users': {'allow_empty': True}, 'groups': {'allow_empty': True}}
 
@@ -25,7 +25,7 @@ class BasicOrganizationSerializer(serializers.ModelSerializer):
         """ Serializer/field specification """
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'contact_name', 'contact_email', 'contact_phone',
-                  'logo_url', 'created', 'modified')
+                  'logo_url', 'created', 'modified', 'salesforce_id', 'additional_metadata',)
         read_only = ('url', 'id', 'created',)
 
 
@@ -38,7 +38,8 @@ class OrganizationWithCourseCountSerializer(BasicOrganizationSerializer):
         """ Serializer/field specification """
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'number_of_courses', 'contact_name', 'contact_email',
-                  'contact_phone', 'logo_url', 'created', 'modified', 'number_of_participants')
+                  'contact_phone', 'logo_url', 'created', 'modified', 'number_of_participants', 'salesforce_id',
+                  'additional_metadata',)
 
 
 class OrganizationWithParticipantCountSerializer(BasicOrganizationSerializer):
@@ -49,7 +50,8 @@ class OrganizationWithParticipantCountSerializer(BasicOrganizationSerializer):
         """ Serializer/field specification """
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'contact_name', 'contact_email',
-                  'contact_phone', 'logo_url', 'created', 'modified', 'number_of_participants')
+                  'contact_phone', 'logo_url', 'created', 'modified', 'number_of_participants', 'salesforce_id',
+                  'additional_metadata',)
 
 
 class OrganizationAttributesSerializer(serializers.ModelSerializer):
