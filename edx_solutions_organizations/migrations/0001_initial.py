@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
-from django.db import migrations, models
-import model_utils.fields
 import django.utils.timezone
 from django.conf import settings
+from django.db import migrations, models
+
+import model_utils.fields
 
 
 class Migration(migrations.Migration):
@@ -40,9 +38,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', model_utils.fields.AutoCreatedField(default=django.utils.timezone.now, verbose_name='created', editable=False)),
                 ('modified', model_utils.fields.AutoLastModifiedField(default=django.utils.timezone.now, verbose_name='modified', editable=False)),
-                ('group', models.ForeignKey(to='auth.Group')),
-                ('organization', models.ForeignKey(to='edx_solutions_organizations.Organization')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('group', models.ForeignKey(to='auth.Group', on_delete=models.CASCADE)),
+                ('organization', models.ForeignKey(to='edx_solutions_organizations.Organization', on_delete=models.CASCADE)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
         migrations.AlterUniqueTogether(

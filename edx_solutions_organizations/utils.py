@@ -18,7 +18,7 @@ def generate_random_key_for_field(name, order):
     :param order: order of the attribute
     :return: next key to be placed against attribute
     """
-    return "%s_%s" % (name.lower(), order)
+    return "{}_{}".format(name.lower(), order)
 
 
 def is_label_exists(name, data):
@@ -38,4 +38,4 @@ def is_key_exists(key, data):
     :param data: existing attributes with keys
     :return: boolean value
     """
-    return key in data.keys()
+    return key in list(data.keys())
