@@ -2,7 +2,9 @@
 Management command to fix organisations that have an empty attributes field.
 """
 import logging
+
 from django.core.management.base import BaseCommand
+
 from edx_solutions_organizations.models import Organization
 
 log = logging.getLogger(__name__)
