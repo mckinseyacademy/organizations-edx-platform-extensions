@@ -344,9 +344,9 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
             if course_id in course_access_roles.get(user_id, []):
                 continue
 
-            enrollments.setdefault(course_id.to_deprecated_string(), []).append(user_id)
-            if course_id.to_deprecated_string() not in course_ids:
-                course_ids.append(course_id.to_deprecated_string())
+            enrollments.setdefault(str(course_id), []).append(user_id)
+            if str(course_id) not in course_ids:
+                course_ids.append(str(course_id))
 
         course_keys = list(map(get_course_key, [_f for _f in course_ids if _f]))
         if request.query_params.get('mobile_available'):
