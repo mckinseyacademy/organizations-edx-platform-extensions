@@ -1089,7 +1089,8 @@ class OrganizationsAttributesApiTests(ModuleStoreTestCase, APIClientMixin):
 
         ]
 
-        self.assertEqual(response.data, expected_response)
+        self.assertEqual(sorted(response.data, key = lambda i: i['label']),
+                         sorted(expected_response, key = lambda i: i['label']))
 
     def test_organizations_attributes_update_with_existing_name(self):
         organization = self.setup_test_organization()
