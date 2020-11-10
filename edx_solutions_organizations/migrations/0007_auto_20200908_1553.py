@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organization',
             name='additional_metadata',
-            field=models.TextField(default=b'{}'),
+            field=models.TextField(default='{}'),
         ),
         migrations.AddField(
             model_name='organization',
