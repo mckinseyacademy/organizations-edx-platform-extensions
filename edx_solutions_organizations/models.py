@@ -118,3 +118,16 @@ class OrganizationUsersAttributes(models.Model):
             return attribute.value
         except cls.DoesNotExist:
             return default
+
+
+class WhitelistedUrls(models.Model):
+    """
+    This model enlists the whitelisted urls allowed for SSO registration inside a frame
+    """
+    url = models.URLField(max_length=255)
+
+    def __str__(self):
+        return self.url
+
+    class Meta:
+        verbose_name_plural = "Whitelisted Urls"
