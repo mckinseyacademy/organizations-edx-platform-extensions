@@ -5,32 +5,32 @@ Run these tests @ Devstack:
 paver test_system -s lms -t organizations
 """
 import uuid
-import mock
-import ddt
-from urllib import urlencode
+from urllib.parse import urlencode
 
 from django.conf import settings
-from django.test.client import Client
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.core.cache import cache
+from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.translation import ugettext as _
 
+import ddt
+import mock
+from edx_solutions_api_integration.test_utils import APIClientMixin
 from gradebook.models import StudentGradebook
-from .models import OrganizationGroupUser
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
 from student.models import UserProfile
 from student.roles import CourseObserverRole
-from student.tests.factories import CourseEnrollmentFactory, UserFactory, GroupFactory, CourseAccessRoleFactory
-from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
-from xmodule.modulestore.tests.factories import CourseFactory
-from edx_solutions_api_integration.test_utils import (
-    APIClientMixin,
-)
+from student.tests.factories import (CourseAccessRoleFactory,
+                                     CourseEnrollmentFactory, GroupFactory,
+                                     UserFactory)
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.django_utils import (
-    ModuleStoreTestCase,
-    TEST_DATA_SPLIT_MODULESTORE
-)
+    TEST_DATA_SPLIT_MODULESTORE, ModuleStoreTestCase)
+from xmodule.modulestore.tests.factories import CourseFactory
+
+from .models import OrganizationGroupUser
+
 
 @mock.patch.dict("django.conf.settings.FEATURES", {'ENFORCE_PASSWORD_POLICY': False,
                                                    'ADVANCED_SECURITY': False,
@@ -43,7 +43,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
     MODULESTORE = TEST_DATA_SPLIT_MODULESTORE
 
     def setUp(self):
-        super(OrganizationsApiTests, self).setUp()
+        super().setUp()
         self.test_server_prefix = 'https://testserver'
         self.base_organizations_uri = '/api/server/organizations/'
         self.base_users_uri = '/api/server/users'
@@ -105,7 +105,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
 
     def test_organizations_list_post(self):
         users = []
-        for i in xrange(1, 6):
+        for i in range(1, 6):
             data = {
                 'email': 'test{}@example.com'.format(i),
                 'username': 'test_user{}'.format(i),
@@ -144,7 +144,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         users = UserFactory.create_batch(5)
 
         organizations = []
-        for i in xrange(30):
+        for i in range(30):
             data = {
                 'name': 'Test Organization {}'.format(i),
                 'display_name': 'Test Name {}'.format(i),
@@ -197,7 +197,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         users = UserFactory.create_batch(2)
 
         organizations = []
-        for i in xrange(2):
+        for i in range(2):
             data = {
                 'name': 'Test Organization {}'.format(i),
                 'display_name': 'Test Name {}'.format(i),
@@ -337,7 +337,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
 
     def test_organizations_list_post_with_groups(self):
         groups = []
-        for i in xrange(1, 6):
+        for i in range(1, 6):
             data = {
                 'name': '{} {}'.format('Test Group', i),
                 'type': 'series',
@@ -381,7 +381,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
 
         # create groups
         max_groups, groups, contactgroup_count = 4, [], 2
-        for i in xrange(1, max_groups + 1):
+        for i in range(1, max_groups + 1):
             grouptype = 'contactgroup' if i <= contactgroup_count else 'series'
             data = {
                 'name': '{} {}'.format('Test Group', i),
@@ -442,9 +442,9 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         response = self.do_get(courses_uri)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['id'], unicode(courses[0].id))
+        self.assertEqual(response.data[0]['id'], str(courses[0].id))
         self.assertEqual(len(response.data[0]['enrolled_users']), 1)
-        self.assertEqual(response.data[1]['id'], unicode(courses[1].id))
+        self.assertEqual(response.data[1]['id'], str(courses[1].id))
         self.assertEqual(len(response.data[1]['enrolled_users']), 1)
 
         # test course uniqueness if multiple organization users are enrolled in same course
@@ -452,9 +452,9 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         response = self.do_get(courses_uri)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['id'], unicode(courses[0].id))
+        self.assertEqual(response.data[0]['id'], str(courses[0].id))
         self.assertEqual(len(response.data[0]['enrolled_users']), 2)
-        self.assertEqual(response.data[1]['id'], unicode(courses[1].id))
+        self.assertEqual(response.data[1]['id'], str(courses[1].id))
         self.assertEqual(len(response.data[1]['enrolled_users']), 1)
 
     def test_organizations_courses_get_exclude_admins(self):
@@ -474,7 +474,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         response = self.do_get(courses_uri)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['id'], unicode(course.id))
+        self.assertEqual(response.data[0]['id'], str(course.id))
         self.assertEqual(len(response.data[0]['enrolled_users']), 1)
 
     def test_organizations_courses_get_organization_user_with_no_course_enrollment(self):
@@ -539,11 +539,11 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         response = self.do_get(courses_uri)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['id'], unicode(courses[0].id))
+        self.assertEqual(response.data[0]['id'], str(courses[0].id))
         self.assertEqual(len(response.data[0]['enrolled_users']), 2)
         self.assertEqual(response.data[0]['enrolled_users'][0], users[0].id)
         self.assertEqual(response.data[0]['enrolled_users'][1], users[2].id)
-        self.assertEqual(response.data[1]['id'], unicode(courses[1].id))
+        self.assertEqual(response.data[1]['id'], str(courses[1].id))
         self.assertEqual(len(response.data[1]['enrolled_users']), 1)
         self.assertEqual(response.data[1]['enrolled_users'][0], users[1].id)
 
@@ -554,12 +554,12 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         response = self.do_get(courses_uri)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['id'], unicode(courses[0].id))
+        self.assertEqual(response.data[0]['id'], str(courses[0].id))
         self.assertEqual(len(response.data[0]['enrolled_users']), 3)
         self.assertEqual(response.data[0]['enrolled_users'][0], users[0].id)
         self.assertEqual(response.data[0]['enrolled_users'][1], users[2].id)
         self.assertEqual(response.data[0]['enrolled_users'][2], users[4].id)
-        self.assertEqual(response.data[1]['id'], unicode(courses[1].id))
+        self.assertEqual(response.data[1]['id'], str(courses[1].id))
         self.assertEqual(len(response.data[1]['enrolled_users']), 2)
         self.assertEqual(response.data[1]['enrolled_users'][0], users[1].id)
         self.assertEqual(response.data[1]['enrolled_users'][1], users[3].id)
@@ -590,7 +590,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         # Create 4 users
         user_course = 4
         users_completed = 2
-        users = [UserFactory.create(username="testuser" + str(__), profile='test') for __ in xrange(user_course)]
+        users = [UserFactory.create(username="testuser" + str(__), profile='test') for __ in range(user_course)]
         for i, user in enumerate(users):
             CourseEnrollmentFactory.create(user=user, course_id=self.course.id)
             grades = (0.75, 0.85)
@@ -608,7 +608,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
             response = self.do_post(users_uri, data)
             self.assertEqual(response.status_code, 201)
 
-        params = {'course_id': unicode(self.course.id), 'include_grades':True}
+        params = {'course_id': str(self.course.id), 'include_grades':True}
         response = self.do_get(users_uri, query_parameters=params)
         self.assertEqual(response.status_code, 200)
         complete_count = len([user for user in response.data if user['complete_status']])
@@ -698,7 +698,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
 
     def test_organizations_metrics_get(self):
         users = []
-        for i in xrange(1, 6):
+        for i in range(1, 6):
             data = {
                 'email': 'test{}@example.com'.format(i),
                 'username': 'test_user{}'.format(i),
@@ -735,7 +735,7 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         course2 = CourseFactory.create(display_name="COURSE2", org="CRS2", run="RUN2", default_store=store)
         course3 = CourseFactory.create(display_name="COURSE3", org="CRS3", run="RUN3", default_store=store)
 
-        for i in xrange(1, 12):
+        for i in range(1, 12):
             data = {
                 'email': 'test{}@example.com'.format(i),
                 'username': 'test_user{}'.format(i),
@@ -777,14 +777,14 @@ class OrganizationsApiTests(ModuleStoreTestCase, APIClientMixin):
         self.assertEqual(response.data['users_grade_complete_count'], 8)
         self.assertEqual(response.data['users_grade_average'], 0.504)
 
-        courses = {'courses': unicode(course1.id)}
+        courses = {'courses': str(course1.id)}
         filtered_metrics_uri = '{}?{}'.format(metrics_uri, urlencode(courses))
         response = self.do_get(filtered_metrics_uri)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['users_grade_complete_count'], 0)
         self.assertEqual(response.data['users_grade_average'], 0.698)
 
-        courses = {'courses': unicode(course2.id)}
+        courses = {'courses': str(course2.id)}
         filtered_metrics_uri = '{}?{}'.format(metrics_uri, urlencode(courses))
         response = self.do_get(filtered_metrics_uri)
         self.assertEqual(response.status_code, 200)
@@ -959,7 +959,7 @@ class OrganizationsAttributesApiTests(ModuleStoreTestCase, APIClientMixin):
     MODULESTORE = TEST_DATA_SPLIT_MODULESTORE
 
     def setUp(self):
-        super(OrganizationsAttributesApiTests, self).setUp()
+        super().setUp()
         self.test_server_prefix = 'https://testserver'
         self.base_organizations_uri = '/api/server/organizations/'
         self.test_organization_name = str(uuid.uuid4())
@@ -1089,7 +1089,8 @@ class OrganizationsAttributesApiTests(ModuleStoreTestCase, APIClientMixin):
 
         ]
 
-        self.assertEqual(response.data, expected_response)
+        self.assertEqual(sorted(response.data, key = lambda i: i['label']),
+                         sorted(expected_response, key = lambda i: i['label']))
 
     def test_organizations_attributes_update_with_existing_name(self):
         organization = self.setup_test_organization()
@@ -1202,5 +1203,3 @@ class OrganizationsAttributesApiTests(ModuleStoreTestCase, APIClientMixin):
         }
         response = self.do_delete(test_uri, data)
         self.assertEqual(response.status_code, 404)
-
-

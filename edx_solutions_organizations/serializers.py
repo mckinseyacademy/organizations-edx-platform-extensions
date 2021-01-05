@@ -1,6 +1,7 @@
 """ Django REST Framework Serializers """
 
 from rest_framework import serializers
+
 from .models import Organization
 
 
@@ -34,7 +35,7 @@ class OrganizationWithCourseCountSerializer(BasicOrganizationSerializer):
     number_of_courses = serializers.IntegerField()
     number_of_participants = serializers.IntegerField()
 
-    class Meta(object):
+    class Meta:
         """ Serializer/field specification """
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'number_of_courses', 'contact_name', 'contact_email',
@@ -46,7 +47,7 @@ class OrganizationWithParticipantCountSerializer(BasicOrganizationSerializer):
     """ Serializer for Organization fields with number of participants """
     number_of_participants = serializers.IntegerField()
 
-    class Meta(object):
+    class Meta:
         """ Serializer/field specification """
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'contact_name', 'contact_email',

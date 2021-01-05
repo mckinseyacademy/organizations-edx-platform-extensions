@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations, models
 
 
@@ -14,6 +11,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='organization',
             name='attributes',
-            field=models.CharField(default=b'{}', max_length=512),
+            field=models.CharField(default='{}', max_length=512),
         ),
     ]
