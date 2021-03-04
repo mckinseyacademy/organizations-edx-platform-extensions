@@ -2,12 +2,13 @@
 Django database models supporting the organizations app
 """
 import json
-from django.contrib.auth.models import Group, User
-from django.db import models
-from django.core.validators import RegexValidator
 
-from model_utils.models import TimeStampedModel
+from django.contrib.auth.models import Group, User
+from django.core.validators import RegexValidator
+from django.db import models
+
 from edx_solutions_projects.models import Workgroup
+from model_utils.models import TimeStampedModel
 
 
 class Organization(TimeStampedModel):
@@ -87,11 +88,11 @@ class OrganizationGroupUser(TimeStampedModel):
     The OrganizationGroupUser model contains information describing the
     link between a particular user, group and an organization.
     """
-    organization = models.ForeignKey(Organization)
-    group = models.ForeignKey(Group)
-    user = models.ForeignKey(User)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    class Meta(object):
+    class Meta:
         """
         Meta class for setting model meta options
         """
@@ -101,12 +102,12 @@ class OrganizationGroupUser(TimeStampedModel):
 class OrganizationUsersAttributes(models.Model):
     """Organization Users Attributes, used to store organization specific data"""
     KEY_REGEX = r"[-_a-zA-Z0-9]+"
-    user = models.ForeignKey(User, related_name="user_attributes")
-    organization = models.ForeignKey(Organization, related_name="user_attributes")
+    user = models.ForeignKey(User, related_name="user_attributes", on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, related_name="user_attributes", on_delete=models.CASCADE)
     key = models.CharField(max_length=255, db_index=True, validators=[RegexValidator(KEY_REGEX)])
     value = models.TextField()
 
-    class Meta(object):
+    class Meta:
         unique_together = ("user", "key")
 
     @classmethod
