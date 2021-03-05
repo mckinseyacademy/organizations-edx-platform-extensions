@@ -3,53 +3,43 @@
 """ ORGANIZATIONS API VIEWS """
 import json
 from functools import reduce
+
 from django.conf import settings
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Sum, F, Count, Prefetch, Case, When, Q
 from django.db import IntegrityError
+from django.db.models import Case, Count, F, Prefetch, Q, Sum, When
 from django.utils.translation import ugettext as _
-from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
-from openedx.core.djangoapps.user_api.models import UserPreference
 
-from rest_framework import status
-from rest_framework.decorators import detail_route, list_route
-from rest_framework.response import Response
-from rest_framework.exceptions import ParseError
-
-from edx_solutions_api_integration.courseware_access import get_course_key, get_course_descriptor
 from edx_solutions_api_integration.courses.serializers import OrganizationCourseSerializer
-from edx_solutions_api_integration.users.serializers import SimpleUserSerializer
+from edx_solutions_api_integration.courseware_access import (
+    get_course_descriptor, get_course_key)
 from edx_solutions_api_integration.groups.serializers import GroupSerializer
 from edx_solutions_api_integration.permissions import (
-    MobileAPIView,
-    SecureListAPIView,
-    SecurePaginatedModelViewSet,
-)
+    MobileAPIView, SecureListAPIView, SecurePaginatedModelViewSet)
+from edx_solutions_api_integration.users.serializers import SimpleUserSerializer
 from edx_solutions_api_integration.utils import (
-    str2bool,
-    get_aggregate_exclusion_user_ids,
-)
-from gradebook.models import StudentGradebook
-from student.models import CourseEnrollment, CourseAccessRole
-from student.roles import (
-    CourseAssistantRole,
-    CourseInstructorRole,
-    CourseObserverRole,
-    CourseStaffRole,
-)
-
+    get_aggregate_exclusion_user_ids, str2bool)
 from edx_solutions_organizations.models import OrganizationUsersAttributes
 from edx_solutions_organizations.serializers import OrganizationAttributesSerializer
-from edx_solutions_organizations.utils import generate_key_for_field, is_key_exists, is_label_exists, \
-    generate_random_key_for_field
-from .serializers import (
-    OrganizationSerializer,
-    BasicOrganizationSerializer,
-    OrganizationWithCourseCountSerializer,
-    OrganizationWithParticipantCountSerializer,
-)
+from edx_solutions_organizations.utils import (generate_key_for_field,
+                                               generate_random_key_for_field,
+                                               is_key_exists, is_label_exists)
+from gradebook.models import StudentGradebook
+from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
+from openedx.core.djangoapps.user_api.models import UserPreference
+from rest_framework import status
+from rest_framework.decorators import detail_route, list_route
+from rest_framework.exceptions import ParseError
+from rest_framework.response import Response
+from student.models import CourseAccessRole, CourseEnrollment
+from student.roles import (CourseAssistantRole, CourseInstructorRole,
+                           CourseObserverRole, CourseStaffRole)
+
 from .models import Organization, OrganizationGroupUser
+from .serializers import (BasicOrganizationSerializer, OrganizationSerializer,
+                          OrganizationWithCourseCountSerializer,
+                          OrganizationWithParticipantCountSerializer)
 
 
 class OrganizationsViewSet(SecurePaginatedModelViewSet):
@@ -124,11 +114,11 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
             number_of_participants=Count('users', distinct=True)
         )
 
-        return super(OrganizationsViewSet, self).list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         self.serializer_class = BasicOrganizationSerializer
-        return super(OrganizationsViewSet, self).retrieve(request, *args, **kwargs)
+        return super().retrieve(request, *args, **kwargs)
 
     @detail_route(methods=['get', ])
     def metrics(self, request, pk):
@@ -169,7 +159,7 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
                 if not courses:
                     org_courses = users_enrolled_qs.aggregate(Count('course_id', distinct=True))
                     total_courses_in_org = org_courses['course_id__count']
-                grade_avg = float('{0:.3f}'.format(
+                grade_avg = float('{:.3f}'.format(
                     float(users_grade_sum['grade__sum']) / total_users / total_courses_in_org
                 ))
         response_data['users_grade_average'] = grade_avg
@@ -253,7 +243,7 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
             if not user_ids:
                 return Response({"detail": _('users parameter is missing.')}, status.HTTP_400_BAD_REQUEST)
             try:
-                user_ids = [int(user_id) for user_id in filter(None, user_ids.split(','))]
+                user_ids = [int(user_id) for user_id in [_f for _f in user_ids.split(',') if _f]]
             except (ValueError, AttributeError):
                 return Response({
                     "detail": _('users parameter must be comma separated list of integers.')
@@ -354,11 +344,11 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
             if course_id in course_access_roles.get(user_id, []):
                 continue
 
-            enrollments.setdefault(course_id.to_deprecated_string(), []).append(user_id)
-            if course_id.to_deprecated_string() not in course_ids:
-                course_ids.append(course_id.to_deprecated_string())
+            enrollments.setdefault(str(course_id), []).append(user_id)
+            if str(course_id) not in course_ids:
+                course_ids.append(str(course_id))
 
-        course_keys = map(get_course_key, filter(None, course_ids))
+        course_keys = list(map(get_course_key, [_f for _f in course_ids if _f]))
         if request.query_params.get('mobile_available'):
             mobile_available = str2bool(request.query_params.get('mobile_available'))
             courses = CourseOverview.objects.filter(id__in=course_keys, mobile_available=mobile_available)
@@ -420,7 +410,7 @@ class OrganizationsGroupsUsersList(SecureListAPIView):
         """
         user_ids = request.data.get('users')
         try:
-            user_ids = map(int, filter(None, user_ids.split(',')))
+            user_ids = list(map(int, [_f for _f in user_ids.split(',') if _f]))
         except Exception:
             raise ParseError("Invalid user id value")
 
@@ -455,7 +445,7 @@ class OrganizationsGroupsUsersList(SecureListAPIView):
         """
         user_ids = request.data.get('users')
         try:
-            user_ids = map(int, filter(None, user_ids.split(',')))
+            user_ids = list(map(int, [_f for _f in user_ids.split(',') if _f]))
         except Exception:
             raise ParseError("Invalid user id value")
 
