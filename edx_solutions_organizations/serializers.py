@@ -13,7 +13,8 @@ class OrganizationSerializer(serializers.ModelSerializer):
         """ Serializer/field specification """
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'contact_name', 'contact_email', 'contact_phone',
-                  'logo_url', 'users', 'groups', 'created', 'modified', 'salesforce_id', 'additional_metadata',)
+                  'logo_url', 'users', 'groups', 'created', 'modified', 'salesforce_id', 'additional_metadata',
+                  'migrated_to_docebo', 'docebo_redirect_url', 'docebo_sso_enabled',)
         read_only = ('url', 'id', 'created')
         extra_kwargs = {'users': {'allow_empty': True}, 'groups': {'allow_empty': True}}
 
@@ -26,7 +27,8 @@ class BasicOrganizationSerializer(serializers.ModelSerializer):
         """ Serializer/field specification """
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'contact_name', 'contact_email', 'contact_phone',
-                  'logo_url', 'created', 'modified', 'salesforce_id', 'additional_metadata',)
+                  'logo_url', 'created', 'modified', 'salesforce_id', 'additional_metadata', 'migrated_to_docebo',
+                  'docebo_redirect_url', 'docebo_sso_enabled',)
         read_only = ('url', 'id', 'created',)
 
 
@@ -40,7 +42,7 @@ class OrganizationWithCourseCountSerializer(BasicOrganizationSerializer):
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'number_of_courses', 'contact_name', 'contact_email',
                   'contact_phone', 'logo_url', 'created', 'modified', 'number_of_participants', 'salesforce_id',
-                  'additional_metadata',)
+                  'additional_metadata', 'migrated_to_docebo', 'docebo_redirect_url', 'docebo_sso_enabled',)
 
 
 class OrganizationWithParticipantCountSerializer(BasicOrganizationSerializer):
@@ -52,7 +54,7 @@ class OrganizationWithParticipantCountSerializer(BasicOrganizationSerializer):
         model = Organization
         fields = ('url', 'id', 'name', 'display_name', 'contact_name', 'contact_email',
                   'contact_phone', 'logo_url', 'created', 'modified', 'number_of_participants', 'salesforce_id',
-                  'additional_metadata',)
+                  'additional_metadata', 'migrated_to_docebo', 'docebo_redirect_url', 'docebo_sso_enabled',)
 
 
 class OrganizationAttributesSerializer(serializers.ModelSerializer):

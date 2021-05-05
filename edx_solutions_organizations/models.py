@@ -28,6 +28,9 @@ class Organization(TimeStampedModel):
     # could be different for each organization
     attributes = models.TextField(default='{}')
     include_manager_info = models.BooleanField(default=False)
+    migrated_to_docebo = models.BooleanField(default=False)
+    docebo_sso_enabled = models.BooleanField(default=False)
+    docebo_redirect_url = models.URLField(max_length=255, null=True, blank=True)
     salesforce_id = models.TextField(null=True, blank=True)
     # JSON to hold any additional metadata related to an organization
     additional_metadata = models.TextField(default='{}')
