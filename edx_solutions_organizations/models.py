@@ -28,8 +28,9 @@ class Organization(TimeStampedModel):
     # could be different for each organization
     attributes = models.TextField(default='{}')
     include_manager_info = models.BooleanField(default=False)
-    is_redirected_to_docebo = models.BooleanField(default=False)
-    redirect_url = models.CharField(max_length=255, null=True, blank=True)
+    migrated_to_docebo = models.BooleanField(default=False)
+    docebo_sso_enabled = models.BooleanField(default=False)
+    docebo_redirect_url = models.URLField(max_length=255, null=True, blank=True)
     salesforce_id = models.TextField(null=True, blank=True)
     # JSON to hold any additional metadata related to an organization
     additional_metadata = models.TextField(default='{}')
@@ -83,10 +84,6 @@ class Organization(TimeStampedModel):
                     user_attributes__organization_id__in=organizations,
                 ).all()
         return users
-
-    def switch_redirect_to_docebo_flag(self):
-        self.is_redirected_to_docebo = not self.is_redirected_to_docebo
-        self.save()
 
 
 class OrganizationGroupUser(TimeStampedModel):
