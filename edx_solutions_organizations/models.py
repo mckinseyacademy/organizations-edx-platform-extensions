@@ -86,6 +86,19 @@ class Organization(TimeStampedModel):
         return users
 
 
+class OrganizationUserMapping(TimeStampedModel):
+    """
+    The OrganizationUserMapping model contains information describing the
+    link between a particular user, organization and it's main company flag.
+    """
+    user = models.ForeignKey(User, related_name="user_organizations", on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, related_name="user_organizations", on_delete=models.CASCADE)
+    is_main_company = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("user", "organization")
+
+
 class OrganizationGroupUser(TimeStampedModel):
     """
     The OrganizationGroupUser model contains information describing the
