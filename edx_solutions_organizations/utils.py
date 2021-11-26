@@ -39,3 +39,14 @@ def is_key_exists(key, data):
     :return: boolean value
     """
     return key in list(data.keys())
+
+
+def generate_key_for_main_user(user_id):
+    """
+    Method used to generate key for the user organization
+    :param user_id: id of the user
+    :return: key to be placed against user main organization
+    """
+    return 'ORGANIZATION-USER-{user_id}'.format(
+        user_id=user_id
+    )
