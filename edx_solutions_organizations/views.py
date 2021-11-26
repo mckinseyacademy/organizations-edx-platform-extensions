@@ -261,7 +261,6 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
             else:
                 return Response(status=status.HTTP_204_NO_CONTENT)
         else:
-            import pdb; pdb.set_trace()
             user_id = request.data.get('id')
             is_main_company = request.data.get('is_main_company')
             try:
