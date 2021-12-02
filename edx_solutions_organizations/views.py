@@ -36,6 +36,7 @@ from student.models import CourseAccessRole, CourseEnrollment
 from student.roles import (CourseAssistantRole, CourseInstructorRole,
                            CourseObserverRole, CourseStaffRole)
 
+from .receivers import user_organization_updated
 from .models import Organization, OrganizationGroupUser
 from .serializers import (BasicOrganizationSerializer, OrganizationSerializer,
                           OrganizationWithCourseCountSerializer,
@@ -261,6 +262,7 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             user_id = request.data.get('id')
+            is_main_company = request.data.get('is_main_company')
             try:
                 user = User.objects.get(id=user_id)
             except ObjectDoesNotExist:
@@ -272,6 +274,12 @@ class OrganizationsViewSet(SecurePaginatedModelViewSet):
                 return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
             organization.users.add(user)
             organization.save()
+            if is_main_company:
+                # trigger event that main organization is updated for this user
+                user_organization_updated.send(
+                    sender=__name__, user_id=user_id,
+                    organization_id=organization.id
+                )
             return Response({}, status=status.HTTP_201_CREATED)
 
     @detail_route(methods=['get', 'post'])

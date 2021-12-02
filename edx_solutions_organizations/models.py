@@ -109,6 +109,7 @@ class OrganizationUsersAttributes(models.Model):
     organization = models.ForeignKey(Organization, related_name="user_attributes", on_delete=models.CASCADE)
     key = models.CharField(max_length=255, db_index=True, validators=[RegexValidator(KEY_REGEX)])
     value = models.TextField()
+    is_main_company = models.BooleanField(null=True, blank=True)
 
     class Meta:
         unique_together = ("user", "key")
